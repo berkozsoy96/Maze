@@ -1,30 +1,22 @@
-import cv2
-from MazeAndCell import Maze
+from maze import Maze
+import pickle
+import os
 
-# Maze dimensions (ncols, nrows)
-nx, ny = 40, 40
-# Maze entry position
-ix, iy = 0, 0
 
-maze = Maze(nx, ny, ix, iy, seed=None)
+nx, ny = 30, 30
+maze = Maze(nx, ny)
 maze.make_maze()
+maze.solve((nx - 1, ny - 1))
 
-padding = 30
+padding = 15
+wall_width = 15
 height = 3000
-cell_side_len = height / ny
-line_thiccness = 10
 
-maze.write_svg('maze.svg', padding=padding, height=height, line_thickness=line_thiccness)
-maze.write_png("maze.png", padding=padding, height=height, line_thickness=line_thiccness)
+folder = "mazes"
+if not os.path.exists(folder):
+    os.mkdir(folder)
 
-ratio = 1/3
-maze_img = cv2.imread("maze.png")
-solution = maze.solve((nx-1, ny-1))
-for cell in maze.solution:
-    cx = int((padding + (cell.x * cell_side_len) + (cell_side_len/2)))
-    cy = int((padding + (cell.y * cell_side_len) + (cell_side_len/2)))
-    r = int((cell_side_len - line_thiccness)/2)
-    cv2.circle(maze_img, (cx, cy), r, (120, 220, 120), -1)
-    cv2.imshow("maze", cv2.resize(maze_img, None, None, ratio, ratio))
-    cv2.waitKey()
-cv2.destroyAllWindows()
+maze.write_png(folder, padding=padding, height=height, wall_width=wall_width, wall_color=(0, 0, 0), wall_texture_path="wall_piece.png",
+               solution_color=(128, 128, 0), solution=True)
+maze.write_svg(folder, padding=padding, height=height, wall_width=wall_width, wall_color=(0, 0, 0))
+pickle.dump(maze, open(folder + "/maze.pck", "wb"))
